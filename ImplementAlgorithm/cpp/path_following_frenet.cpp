@@ -13,7 +13,9 @@ void pathFollowingFrenet::setControlGains(double k_theta_e, double k_e)
     k_e_ = k_e;
 
     // initialize the spline
-    fitSpline();
+    std::vector<double> posX = {};
+    std::vector<double> posY = {};
+    fitSpline(posX, posY);
 }
 
 void pathFollowingFrenet::calControlInput()
@@ -23,7 +25,11 @@ void pathFollowingFrenet::calControlInput()
     omega_ = vr * kappa_s_ * cos(theta_e_) / (1 - kappa_s_ * e_) - k_theta_e_* vr * theta_e_ 
              - k_e_ * vr * sin(theta_e_) / theta_e_ * e_;
     
-    
+}
+
+void pathFollowingFrenet::fitSpline(std::vector<double>& posX, std::vector<double>& posY)
+{
+    spline_.set_points(posX, posY);
 }
 
 void pathFollowingFrenet::propagate()
