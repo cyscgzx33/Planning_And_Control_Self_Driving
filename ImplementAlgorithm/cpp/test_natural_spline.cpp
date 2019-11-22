@@ -16,19 +16,14 @@ int main(int argc, char** argv)
         QVector2D( 6, 4),
         QVector2D( 8, 4),
         QVector2D( 7, 5)
-        // QVector2D(0, 0),
-        // QVector2D(1, 1),
-        // QVector2D(2, 2),
-        // QVector2D(3, 3),
-        // QVector2D(4, 4)
     };
+
     NaturalSpline<QVector2D> mySpline(splinePoints);
     QVector2D p0 = mySpline.getPosition(0.0f);
     QVector2D p1 = mySpline.getPosition(1.0f);
     QVector2D p2 = mySpline.getPosition(2.0f);
     QVector2D p3 = mySpline.getPosition(3.0f);
     QVector2D p4 = mySpline.getPosition(4.0f);
-    // QVector2D p5 = mySpline.getPosition(5.0f);
     QVector2D p5 = mySpline.getPosition(4.05f);
     double arclength = mySpline.arcLength(4, 5);
     double totallength = mySpline.totalLength();
@@ -51,6 +46,6 @@ int main(int argc, char** argv)
               << ", p4[1] = " << p4[1]
               << ", p5[0] = " << p5[0]
               << ", p5[1] = " << p5[1] << std::endl;
-
+    
     return 0;
 }
