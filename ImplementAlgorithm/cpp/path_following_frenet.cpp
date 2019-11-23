@@ -4,11 +4,23 @@ pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e) :
                      s_(s), e_(e), theta_e_(theta_e), k_theta_e_(1.0), k_e_(1.0) 
 {
     // initialize the spline
-    std::vector<double> posX = {1.0, 2.0, 3.0};
-    std::vector<double> posY = {2,0, 3.0, 6.0};
+    // std::vector<double> posX = {1.0, 2.0, 3.0};
+    // std::vector<double> posY = {2,0, 3.0, 6.0};
+    std::vector<double> posX = {0.0, 1.0, 3.0, 4.0, 5.0, 5.5, 6.5, 7.7, 9.0,  10.5};
+    std::vector<double> posY = {0,0, 2.0, 4.0, 4.5, 6.5, 8.1, 9.4, 7.5, 10.0, 11.5};
     fitSpline(posX, posY);
 
     std::cout << "successfully inited a pathFollowingFrenet object" << std::endl;
+
+    std::cout << "start to execute the simulation of propagation" << std::endl;
+    std::cout << "The initial vehicle states are:" << std::endl;
+    investigateStates();
+    for (int i = 0; i < 20; i++)
+    {
+        std::cout << "timestep @ i = " << i << ": ";
+        propagate();
+        investigateStates();
+    }
 }
 
 pathFollowingFrenet::~pathFollowingFrenet() 
@@ -31,13 +43,15 @@ double pathFollowingFrenet::calKappa()
     /* using binary search to resolve value of t from s(t) */
     // firstly find the lowerbound ( TC: O(logN) )
     auto lb = std::lower_bound(spline_seq_ptr_->begin(), spline_seq_ptr_->end(), s_);
-    assert ( lb == spline_seq_ptr_->end() ); // all elements in spline_seq_ptr_ is larger than s_
-    assert ( lb == spline_seq_ptr_->begin() );
+    assert ( lb != spline_seq_ptr_->end() ); // all elements in spline_seq_ptr_ is larger than s_
+    // assert ( lb != spline_seq_ptr_->begin() );
     int lb_idx = lb - spline_seq_ptr_->begin();
 
-    // TODO: find a good way to handle the boundary probelm
+    // TODO: find a good way to handle the boundary issue
     // if (lb_idx == 0 || lb_idx == sz_)
     //     return double(lb_idx);
+    if (lb_idx == 0)
+        return double (lb_idx);
     
     // start binary search
     double tolerance = 0.000001; // 10^-6
@@ -115,6 +129,15 @@ void pathFollowingFrenet::investigateSpline() const
 {
     std::cout << "arclength = " << spline_ptr_->totalLength() << std::endl;
 }
+
+void pathFollowingFrenet::investigateStates() const
+{
+    std::cout << "[s, e, theta_e] = " 
+              << s_       << ", "
+              << e_       << ", "
+              << theta_e_ << "]\n";
+}
+
 
 int main(int argc, char** argv)
 {

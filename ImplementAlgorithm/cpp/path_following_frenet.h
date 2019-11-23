@@ -48,6 +48,7 @@ class pathFollowingFrenet
     double calOmega();
     void propagate();                        // execute the propagation for one step
     void investigateSpline() const;
+    void investigateStates() const;
 };
 
 #endif /* PATH_FOLLOWING_FRENET_H */

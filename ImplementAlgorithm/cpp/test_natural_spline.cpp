@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     QVector2D p5 = mySpline.getPosition(4.05f);
     double arclength = mySpline.arcLength(4, 5);
     double totallength = mySpline.totalLength();
-    auto curvatureSpline = mySpline.getCurvature(1.0f);
+    auto curvatureSpline = mySpline.getCurvature(0.0f); // check what does 0.0 curvature looks like
 
 
     std::cout << "arclength = " << arclength
@@ -43,6 +43,8 @@ int main(int argc, char** argv)
               << ", arclength(0, 5) = " << mySpline.arcLength(0, 5)
               << ", curvature[0] = " << curvatureSpline.curvature[0]
               << ", curvature[1] = " << curvatureSpline.curvature[1]
+              << ", tangent[0] = " << curvatureSpline.tangent[0]
+              << ", tangent[1] = " << curvatureSpline.tangent[1]
               << ", p0[0] = " << p0[0]
               << ", p0[1] = " << p0[1] 
               << ", p1[0] = " << p1[0]
