@@ -25,7 +25,9 @@ class pathFollowingFrenet
 
     /* spline variables */
     NaturalSpline<QVector2D>* spline_ptr_;   // the spline function, spline_ := s(t)
+    std::vector<double>* spline_seq_ptr_;    // spline seq, s_i(t), i from 0 to sz_
     double kappa_s_;                         // curvature w.r.t. s, kappa_s_ := kappa(s)
+    int sz_;                                 // size of givin points to the spline
 
     /* control variables */
     double omega_;                           // calculated control input
@@ -42,7 +44,8 @@ class pathFollowingFrenet
                    std::vector<double>& posY);
     void setControlGains(double k_theta_e, 
                          double k_e);
-    void calControlInput();
+    double calKappa();
+    void calOmega();
     void propagate();                        // execute the propagation for one step
     void investigateSpline() const;
 };

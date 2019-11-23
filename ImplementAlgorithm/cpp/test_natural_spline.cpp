@@ -32,6 +32,15 @@ int main(int argc, char** argv)
 
     std::cout << "arclength = " << arclength
               << ", totallength = " << totallength
+              << ", arclength(0, 0) = " << mySpline.arcLength(0, 0)
+              << ", arclength(0, 0.00001f) = " << mySpline.arcLength(0, 0.00001f)
+              << ", arclength(0, 0.5f) = " << mySpline.arcLength(0, 0.5f)
+              << ", arclength(0, 0.99999f) = " << mySpline.arcLength(0, 0.99999f)
+              << ", arclength(0, 1) = " << mySpline.arcLength(0, 1)
+              << ", arclength(0, 2) = " << mySpline.arcLength(0, 2)
+              << ", arclength(0, 3) = " << mySpline.arcLength(0, 3)
+              << ", arclength(0, 4) = " << mySpline.arcLength(0, 4)
+              << ", arclength(0, 5) = " << mySpline.arcLength(0, 5)
               << ", curvature[0] = " << curvatureSpline.curvature[0]
               << ", curvature[1] = " << curvatureSpline.curvature[1]
               << ", p0[0] = " << p0[0]
