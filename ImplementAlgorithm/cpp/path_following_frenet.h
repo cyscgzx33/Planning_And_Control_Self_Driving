@@ -45,7 +45,7 @@ class pathFollowingFrenet
     void setControlGains(double k_theta_e, 
                          double k_e);
     double calKappa();
-    void calOmega();
+    double calOmega();
     void propagate();                        // execute the propagation for one step
     void investigateSpline() const;
 };

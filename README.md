@@ -12,5 +12,8 @@
 
 
 ## Reference
+### Papers
 * [A Survey of Motion Planning and Control Techniques for Self-driving Urban Vehicles, Paden, 2016](https://arxiv.org/pdf/1604.07446.pdf)
 * [Optimization-Based Motion Planning and Model Predictive Control for Autonomous Driving, Lima, 2018](https://www.diva-portal.org/smash/get/diva2:1241535/FULLTEXT01.pdf)
+### Open Source Libraries
+* [ejmahler / SplineLibrary](https://github.com/ejmahler/SplineLibrary)

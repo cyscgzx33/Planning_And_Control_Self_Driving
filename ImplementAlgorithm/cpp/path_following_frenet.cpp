@@ -53,14 +53,28 @@ double pathFollowingFrenet::calKappa()
 
     /* calculate kappa using curvature formula */
     double t = start;
-
+    auto d_spline = spline_ptr_->getCurvature(t); // derivatives of spline @ t, including 1st and 2nd derivatives
+    // denote s(t) = ( x(t), y(t) )
+    // dsdt(t) = ( dxdt(t), dydt(t) )
+    // d2sdt2(t) = ( d2xdt2(t), d2ydt2(t) )
+    // according to [url=https://www.math24.net/curvature-radius/]:
+    // kappa = abs(dxdt * d2ydt2 - dydt * d2xdt2) / pow(dxdt * dxdt + dydt * dydt, 1.5)
+    double dxdt = d_spline.tangent[0];
+    double dydt = d_spline.tangent[1];
+    double d2xdt2 = d_spline.curvature[0];
+    double d2ydt2 = d_spline.curvature[1];
+    double kappa_s = (dxdt * d2ydt2 - dydt * d2xdt2) / pow(dxdt * dxdt + dydt * dydt, 1.5);
+    
+    return kappa_s;
 }
 
-void pathFollowingFrenet::calOmega()
+double pathFollowingFrenet::calOmega()
 {
     // execute a simple feedback control law to calculate control input
-    omega_ = vr * kappa_s_ * cos(theta_e_) / (1 - kappa_s_ * e_) - k_theta_e_* vr * theta_e_ 
-             - k_e_ * vr * sin(theta_e_) / theta_e_ * e_;
+    double omega = vr * kappa_s_ * cos(theta_e_) / (1 - kappa_s_ * e_) - k_theta_e_* vr * theta_e_ 
+                 - k_e_ * vr * sin(theta_e_) / theta_e_ * e_;
+
+    return omega;
 }
 
 void pathFollowingFrenet::fitSpline(std::vector<double>& posX, std::vector<double>& posY)
@@ -80,16 +94,16 @@ void pathFollowingFrenet::fitSpline(std::vector<double>& posX, std::vector<doubl
     std::vector<double>* spline_seq_ptr = new std::vector<double>(sz_);
     for ( int i = 0; i < sz_; i++ )
         (*spline_seq_ptr)[i] = spline_ptr->arcLength(0, i);
-    spline_ptr_ = spline_ptr;
+    spline_seq_ptr_ = spline_seq_ptr;
 }
 
 void pathFollowingFrenet::propagate()
 {   
     // update the curvature kappa_s_
-    calKappa();
+    kappa_s_ = calKappa();
     
     // obtain the control input omega_
-    calOmega();
+    omega_ = calOmega();
 
     // execute the kinematics equation to update the state variables
     s_        =  s_ + vr * cos(theta_e_) / (1 - kappa_s_ * e_) * dt;
@@ -106,6 +120,6 @@ int main(int argc, char** argv)
 {
     pathFollowingFrenet scenario_0(0.1, 1.0, 0.05);
     scenario_0.investigateSpline();
-
+    std::cout << "preparing to destroy object scenario_0\n";
     return 0;
 }
