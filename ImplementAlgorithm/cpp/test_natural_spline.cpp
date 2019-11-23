@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     double arclength = mySpline.arcLength(4, 5);
     double totallength = mySpline.totalLength();
     auto curvatureSpline = mySpline.getCurvature(1.0f);
-    
+
 
     std::cout << "arclength = " << arclength
               << ", totallength = " << totallength

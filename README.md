@@ -1,5 +1,9 @@
 # Planning and Control Package of Self Driving Car
 
+## Build
+### Dependencies
+* Qt
+
 ## Algorithm Implementation
 ### Path Following Algorithm
 * Using a **kinematics model** as the vehicle model

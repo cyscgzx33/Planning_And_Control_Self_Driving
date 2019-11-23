@@ -4,15 +4,19 @@
 #include <vector>
 #include <iostream>
 #include <cmath>
-#include "lib/spline.h"
+/* for fitting spline */
+#include "lib/spline_library/splines/natural_spline.h"
+#include "lib/spline_library/vector.h"
+#include "lib/spline_library/spline.h"
+#include <QVector2D>
 
 class pathFollowingFrenet 
 {
   private:
     
     /* fixed parameters */
-    const double dt = 0.05;       // time step
-    const double vr = 10.0;       // longditudinal velocity
+    const double dt = 0.05;                  // time step
+    const double vr = 10.0;                  // longditudinal velocity
 
     /* state variables */ 
     double s_;
@@ -20,11 +24,11 @@ class pathFollowingFrenet
     double theta_e_;
 
     /* spline variables */
-    tk::spline spline_;           // the spline function, spline_ := s(t)
-    double kappa_s_;              // curvature w.r.t. s, kappa_s_ := kappa(s)
+    NaturalSpline<QVector2D>* spline_ptr_;   // the spline function, spline_ := s(t)
+    double kappa_s_;                         // curvature w.r.t. s, kappa_s_ := kappa(s)
 
     /* control variables */
-    double omega_;                // calculated control input
+    double omega_;                           // calculated control input
     double k_theta_e_;
     double k_e_;
 
@@ -39,7 +43,8 @@ class pathFollowingFrenet
     void setControlGains(double k_theta_e, 
                          double k_e);
     void calControlInput();
-    void propagate();             // execute the propagation for one step
+    void propagate();                        // execute the propagation for one step
+    void investigateSpline() const;
 };
 
 #endif /* PATH_FOLLOWING_FRENET_H */
