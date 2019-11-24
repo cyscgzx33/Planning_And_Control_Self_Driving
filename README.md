@@ -2,7 +2,12 @@
 
 ## Build
 ### Dependencies
-* Qt
+* Qt (refer to [official docs for installation](https://wiki.qt.io/Install_Qt_5_on_Ubuntu))
+    * For Ubuntu 16.04, firstly [download a 32-bit or 64-bit Linux installation](https://www.qt.io/download-open-source#section-2)
+    * `$ cd Downloads`
+    * `$ chmod +x qt-opensource-linux-x64-5.7.0.run` (or find the other version you've downloaded)
+    * `$ ./qt-opensource-linux-x64-5.7.0.run`
+    * ***Note***: there is a special way to set Qt5 at CMake for building the project, refer to [this site](https://www.kdab.com/using-cmake-with-qt-5/) for more information
 
 ## Algorithm Implementation
 ### Path Following Algorithm
