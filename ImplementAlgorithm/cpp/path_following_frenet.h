@@ -9,6 +9,8 @@
 #include "lib/spline_library/vector.h"
 #include "lib/spline_library/spline.h"
 #include <QVector2D>
+/* for plotting */
+#include "lib/matplotlibcpp.h"
 
 class pathFollowingFrenet 
 {
@@ -22,6 +24,9 @@ class pathFollowingFrenet
     double s_;
     double e_;
     double theta_e_;
+    std::vector<double> s_vec_;
+    std::vector<double> e_vec_;
+    std::vector<double> theta_e_vec_;
 
     /* spline variables */
     NaturalSpline<QVector2D>* spline_ptr_;   // the spline function, spline_ := s(t)
@@ -47,8 +52,10 @@ class pathFollowingFrenet
     double calKappa();
     double calOmega();
     void propagate();                        // execute the propagation for one step
+    void augmentStateVectors();
     void investigateSpline() const;
     void investigateStates() const;
+    void plotStates() const;
 };
 
 #endif /* PATH_FOLLOWING_FRENET_H */

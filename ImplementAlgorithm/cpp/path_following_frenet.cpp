@@ -1,11 +1,11 @@
 #include "path_following_frenet.h"
 
+namespace plt = matplotlibcpp;
+
 pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e) : 
                      s_(s), e_(e), theta_e_(theta_e), k_theta_e_(1.0), k_e_(1.0) 
 {
     // initialize the spline
-    // std::vector<double> posX = {1.0, 2.0, 3.0};
-    // std::vector<double> posY = {2,0, 3.0, 6.0};
     std::vector<double> posX = {0.0, 1.0, 3.0, 4.0, 5.0, 5.5, 6.5, 7.7, 9.0,  10.5};
     std::vector<double> posY = {0,0, 2.0, 4.0, 4.5, 6.5, 8.1, 9.4, 7.5, 10.0, 11.5};
     fitSpline(posX, posY);
@@ -15,12 +15,17 @@ pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e) :
     std::cout << "start to execute the simulation of propagation" << std::endl;
     std::cout << "The initial vehicle states are:" << std::endl;
     investigateStates();
+    augmentStateVectors();
     for (int i = 0; i < 20; i++)
     {
         std::cout << "timestep @ i = " << i << ": ";
         propagate();
         investigateStates();
+        augmentStateVectors();
     }
+
+    /* plot the resolved state vectors */
+    plotStates();
 }
 
 pathFollowingFrenet::~pathFollowingFrenet() 
@@ -48,8 +53,6 @@ double pathFollowingFrenet::calKappa()
     int lb_idx = lb - spline_seq_ptr_->begin();
 
     // TODO: find a good way to handle the boundary issue
-    // if (lb_idx == 0 || lb_idx == sz_)
-    //     return double(lb_idx);
     if (lb_idx == 0)
         return double (lb_idx);
     
@@ -125,6 +128,13 @@ void pathFollowingFrenet::propagate()
     theta_e_  =  theta_e_ + ( omega_ - vr * kappa_s_ * cos(theta_e_) / (1 - kappa_s_ * e_) ) * dt;
 }
 
+void pathFollowingFrenet::augmentStateVectors()
+{
+    s_vec_.push_back(s_);
+    e_vec_.push_back(e_);
+    theta_e_vec_.push_back(theta_e_);
+}
+
 void pathFollowingFrenet::investigateSpline() const
 {
     std::cout << "arclength = " << spline_ptr_->totalLength() << std::endl;
@@ -138,11 +148,29 @@ void pathFollowingFrenet::investigateStates() const
               << theta_e_ << "]\n";
 }
 
+void pathFollowingFrenet::plotStates() const
+{
+    /* plot results */
+    // NOTE: feel free to play around with this.
+    // It's useful for debugging!
+    plt::subplot(3, 1, 1);
+    plt::title("arclength: s [m]");
+    plt::plot(s_vec_);
+    plt::subplot(3, 1, 2);
+    plt::title("lateral error: e [m]");
+    plt::plot(e_vec_);
+    plt::subplot(3, 1, 3);
+    plt::title("heading error: theta [rad]");
+    plt::plot(theta_e_vec_);
+
+    plt::show();
+}
 
 int main(int argc, char** argv)
 {
     pathFollowingFrenet scenario_0(0.1, 1.0, 0.05);
     scenario_0.investigateSpline();
     std::cout << "preparing to destroy object scenario_0\n";
+
     return 0;
 }
