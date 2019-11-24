@@ -1,5 +1,9 @@
 # Planning and Control Package of Self Driving Car <br />
-<img align="center" src="simple_path_following.png" width="450" /> <br />
+<p align="center">
+  <img src="simple_path_following.png" width="600" />
+</p>
+
+
 ## Build
 ### Dependencies
 * Qt (refer to [official docs for installation](https://wiki.qt.io/Install_Qt_5_on_Ubuntu))

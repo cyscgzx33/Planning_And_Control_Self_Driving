@@ -210,7 +210,7 @@ void pathFollowingFrenet::plotStates() const
 void pathFollowingFrenet::plotXYCartesian() const
 {
     /* plot both reference path and actual path in Cartesian coordinates */
-    plt::title("Resulst of Reference path & Actual path in Cartesian: [m]");
+    plt::title("Resulst of Path Following Control: (X, Y) [m]");
     plt::named_plot("Actual Path", x_vec_, y_vec_, "b");
     plt::named_plot("Reference Path", x0_vec_, y0_vec_, "r--");
     plt::legend();
