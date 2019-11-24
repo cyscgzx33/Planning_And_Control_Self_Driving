@@ -29,6 +29,8 @@ class pathFollowingFrenet
     std::vector<double> theta_e_vec_;
 
     /* store traj of catesian */
+    std::vector<double> x0_vec_;
+    std::vector<double> y0_vec_;
     std::vector<double> x_vec_;
     std::vector<double> y_vec_;
 
@@ -56,11 +58,13 @@ class pathFollowingFrenet
     double reverseArclength();               // obtain t from s(t) by inversing the function
     double calKappa(double t);
     double calOmega();
+    void Frenet2Cartesian(double t);
     void propagate();                        // execute the propagation for one step
     void augmentStateVectors();
     void investigateSpline() const;
     void investigateStates() const;
     void plotStates() const;
+    void plotXYCartesian() const;
 };
 
 #endif /* PATH_FOLLOWING_FRENET_H */

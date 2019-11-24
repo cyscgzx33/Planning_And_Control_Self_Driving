@@ -1,5 +1,5 @@
-# Planning and Control Package of Self Driving Car
-
+# Planning and Control Package of Self Driving Car <br />
+<img align="center" src="simple_path_following.png" width="450" /> <br />
 ## Build
 ### Dependencies
 * Qt (refer to [official docs for installation](https://wiki.qt.io/Install_Qt_5_on_Ubuntu))
@@ -11,7 +11,7 @@
 
 ## Algorithm Implementation
 ### Path Following Algorithm
-* Using a **kinematics model** as the vehicle model
+* Using a **kinematics model in Frenet Coordinate** as the vehicle model
 * Apply a very simple *feedback control* strategy
 * Implement the algorithm in `C++`
 
@@ -22,3 +22,4 @@
 * [Optimization-Based Motion Planning and Model Predictive Control for Autonomous Driving, Lima, 2018](https://www.diva-portal.org/smash/get/diva2:1241535/FULLTEXT01.pdf)
 ### Open Source Libraries
 * [ejmahler / SplineLibrary](https://github.com/ejmahler/SplineLibrary)
+* [matplotlib-cpp](https://github.com/lava/matplotlib-cpp)

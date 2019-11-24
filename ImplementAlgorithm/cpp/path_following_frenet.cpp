@@ -28,6 +28,9 @@ pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e) :
 
     /* plot the resolved state vectors */
     plotStates();
+
+    /* plot paths in Cartesian coordinate */
+    plotXYCartesian();
 }
 
 pathFollowingFrenet::~pathFollowingFrenet() 
@@ -102,6 +105,31 @@ double pathFollowingFrenet::calOmega()
     return omega;
 }
 
+void pathFollowingFrenet::Frenet2Cartesian(double t)
+{
+    /* Step I: obtain the cartesian coordinates on the nominal path */
+    auto d_spline = spline_ptr_->getCurvature(t); // derivatives of spline @ t, including 1st and 2nd derivatives
+    double x_cart     =  d_spline.position[0];
+    double y_cart     =  d_spline.position[1];
+    double dxdt_cart  =  d_spline.tangent[0];
+    double dydt_cart  =  d_spline.tangent[1];
+    // According to [https://math.libretexts.org/Bookshelves/Calculus/Supplemental_Modules_(Calculus)/Vector_Calculus/2%3A_Vector-Valued_Functions_and_Motion_in_Space/2.3%3A_Curvature_and_Normal_Vectors_of_a_Curve]
+    // Tangent vector T = dr/dt, where r = x(t)i + y(t)j= ( x(t), y(t) )
+    // Therefor, T = (dxdt, dydt)
+    // Thus, theta(t) = atan2(dydt, dxdt)
+    double theta = atan2(dydt_cart, dxdt_cart);
+
+    /* Step II: obtain the cartesian coordinates of actual position via error equations */
+    double x_cart_actual = x_cart + e_ * cos(M_PI + theta + theta_e_);
+    double y_cart_actual = y_cart + e_ * sin(M_PI + theta + theta_e_);
+
+    /* Step III: store the results */
+    x_vec_.push_back(x_cart_actual);
+    y_vec_.push_back(y_cart_actual);
+    x0_vec_.push_back(x_cart);
+    y0_vec_.push_back(y_cart);
+}
+
 void pathFollowingFrenet::fitSpline(std::vector<double>& posX, std::vector<double>& posY)
 {   
     sz_ = posX.size();
@@ -124,13 +152,16 @@ void pathFollowingFrenet::fitSpline(std::vector<double>& posX, std::vector<doubl
 
 void pathFollowingFrenet::propagate()
 {   
-    // obtain t from s := s(t)
+    // obtain t by reversing the arclength s := s(t)
     double t = reverseArclength();
+
+    // convert current Frenet pose to Cartesian pose
+    Frenet2Cartesian(t);
 
     // update the curvature kappa_s_
     kappa_s_ = calKappa(t);
     
-    // obtain the control input omega_
+    // update the control input omega_
     omega_ = calOmega();
 
     // execute the kinematics equation to update the state variables
@@ -172,6 +203,18 @@ void pathFollowingFrenet::plotStates() const
     plt::subplot(3, 1, 3);
     plt::title("heading error: theta [rad]");
     plt::plot(theta_e_vec_);
+
+    plt::show();
+}
+
+void pathFollowingFrenet::plotXYCartesian() const
+{
+    /* plot both reference path and actual path in Cartesian coordinates */
+    plt::title("Resulst of Reference path & Actual path in Cartesian: [m]");
+    plt::named_plot("Actual Path", x_vec_, y_vec_, "b");
+    plt::named_plot("Reference Path", x0_vec_, y0_vec_, "r--");
+    plt::legend();
+    plt::save("./simple_path_following.png");
 
     plt::show();
 }
