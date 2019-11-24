@@ -28,6 +28,10 @@ class pathFollowingFrenet
     std::vector<double> e_vec_;
     std::vector<double> theta_e_vec_;
 
+    /* store traj of catesian */
+    std::vector<double> x_vec_;
+    std::vector<double> y_vec_;
+
     /* spline variables */
     NaturalSpline<QVector2D>* spline_ptr_;   // the spline function, spline_ := s(t)
     std::vector<double>* spline_seq_ptr_;    // spline seq, s_i(t), i from 0 to sz_
@@ -49,7 +53,8 @@ class pathFollowingFrenet
                    std::vector<double>& posY);
     void setControlGains(double k_theta_e, 
                          double k_e);
-    double calKappa();
+    double reverseArclength();               // obtain t from s(t) by inversing the function
+    double calKappa(double t);
     double calOmega();
     void propagate();                        // execute the propagation for one step
     void augmentStateVectors();

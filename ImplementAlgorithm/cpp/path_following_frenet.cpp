@@ -6,8 +6,10 @@ pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e) :
                      s_(s), e_(e), theta_e_(theta_e), k_theta_e_(1.0), k_e_(1.0) 
 {
     // initialize the spline
-    std::vector<double> posX = {0.0, 1.0, 3.0, 4.0, 5.0, 5.5, 6.5, 7.7, 9.0,  10.5};
-    std::vector<double> posY = {0,0, 2.0, 4.0, 4.5, 6.5, 8.1, 9.4, 7.5, 10.0, 11.5};
+    // std::vector<double> posX = {0.0, 1.0, 3.0, 4.0, 5.0, 5.5, 6.5, 7.7, 9.0,  10.5};
+    // std::vector<double> posY = {0,0, 2.0, 4.0, 4.5, 6.5, 8.1, 9.4, 7.5, 10.0, 11.5};
+    std::vector<double> posX = {0.0, 1.0, 3.0, 4.0, 5.0, 5.5, 6.5, 7.7, 9.0,  10.5, 12,   14,   16,   10};
+    std::vector<double> posY = {0,0, 2.0, 4.0, 4.5, 6.5, 8.1, 9.4, 7.5, 10.0, 11.5, 12.5, 14.6, 16.9, 24};
     fitSpline(posX, posY);
 
     std::cout << "successfully inited a pathFollowingFrenet object" << std::endl;
@@ -16,7 +18,7 @@ pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e) :
     std::cout << "The initial vehicle states are:" << std::endl;
     investigateStates();
     augmentStateVectors();
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 30; i++)
     {
         std::cout << "timestep @ i = " << i << ": ";
         propagate();
@@ -40,7 +42,7 @@ void pathFollowingFrenet::setControlGains(double k_theta_e, double k_e)
     k_e_ = k_e;
 }
 
-double pathFollowingFrenet::calKappa()
+double pathFollowingFrenet::reverseArclength()
 {
     // given s := s(t), need to solve kappa(s(t))
     // ==> solve t first, and obtain kappa(s(t)) correspondingly
@@ -49,13 +51,13 @@ double pathFollowingFrenet::calKappa()
     // firstly find the lowerbound ( TC: O(logN) )
     auto lb = std::lower_bound(spline_seq_ptr_->begin(), spline_seq_ptr_->end(), s_);
     assert ( lb != spline_seq_ptr_->end() ); // all elements in spline_seq_ptr_ is larger than s_
-    // assert ( lb != spline_seq_ptr_->begin() );
+
     int lb_idx = lb - spline_seq_ptr_->begin();
 
     // TODO: find a good way to handle the boundary issue
     if (lb_idx == 0)
         return double (lb_idx);
-    
+
     // start binary search
     double tolerance = 0.000001; // 10^-6
     double start = lb_idx - 1, end = lb_idx;
@@ -68,9 +70,15 @@ double pathFollowingFrenet::calKappa()
             end = mid; 
     }
 
+    // start and end are very close to each other
+    return start; 
+}
+
+double pathFollowingFrenet::calKappa(double t)
+{
     /* calculate kappa using curvature formula */
-    double t = start;
     auto d_spline = spline_ptr_->getCurvature(t); // derivatives of spline @ t, including 1st and 2nd derivatives
+
     // denote s(t) = ( x(t), y(t) )
     // dsdt(t) = ( dxdt(t), dydt(t) )
     // d2sdt2(t) = ( d2xdt2(t), d2ydt2(t) )
@@ -116,8 +124,11 @@ void pathFollowingFrenet::fitSpline(std::vector<double>& posX, std::vector<doubl
 
 void pathFollowingFrenet::propagate()
 {   
+    // obtain t from s := s(t)
+    double t = reverseArclength();
+
     // update the curvature kappa_s_
-    kappa_s_ = calKappa();
+    kappa_s_ = calKappa(t);
     
     // obtain the control input omega_
     omega_ = calOmega();
@@ -151,7 +162,6 @@ void pathFollowingFrenet::investigateStates() const
 void pathFollowingFrenet::plotStates() const
 {
     /* plot results */
-    // NOTE: feel free to play around with this.
     // It's useful for debugging!
     plt::subplot(3, 1, 1);
     plt::title("arclength: s [m]");
