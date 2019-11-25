@@ -5,20 +5,17 @@ namespace plt = matplotlibcpp;
 pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e) : 
                      s_(s), e_(e), theta_e_(theta_e), k_theta_e_(1.0), k_e_(1.0) 
 {
-    // initialize the spline
-    // std::vector<double> posX = {0.0, 1.0, 3.0, 4.0, 5.0, 5.5, 6.5, 7.7, 9.0,  10.5};
-    // std::vector<double> posY = {0,0, 2.0, 4.0, 4.5, 6.5, 8.1, 9.4, 7.5, 10.0, 11.5};
+    /* initialize the spline */
     std::vector<double> posX = {0.0, 1.0, 3.0, 4.0, 5.0, 5.5, 6.5, 7.7, 9.0,  10.5, 12,   14,   16,   10};
     std::vector<double> posY = {0,0, 2.0, 4.0, 4.5, 6.5, 8.1, 9.4, 7.5, 10.0, 11.5, 12.5, 14.6, 16.9, 24};
     fitSpline(posX, posY);
 
-    std::cout << "successfully inited a pathFollowingFrenet object" << std::endl;
-
+    /* start path following */
     std::cout << "start to execute the simulation of propagation" << std::endl;
     std::cout << "The initial vehicle states are:" << std::endl;
     investigateStates();
     augmentStateVectors();
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < N; i++)
     {
         std::cout << "timestep @ i = " << i << ": ";
         propagate();
@@ -47,8 +44,9 @@ void pathFollowingFrenet::setControlGains(double k_theta_e, double k_e)
 
 double pathFollowingFrenet::reverseArclength()
 {
-    // given s := s(t), need to solve kappa(s(t))
-    // ==> solve t first, and obtain kappa(s(t)) correspondingly
+    /** Goal:    given s := s(t), need to solve kappa(s(t))
+     *  Method:  solve t first, and obtain kappa(s(t)) correspondingly
+     * */
 
     /* using binary search to resolve value of t from s(t) */
     // firstly find the lowerbound ( TC: O(logN) )
@@ -61,10 +59,10 @@ double pathFollowingFrenet::reverseArclength()
     if (lb_idx == 0)
         return double (lb_idx);
 
-    // start binary search
+    // Binary search ( TC: O(logN) )
     double tolerance = 0.000001; // 10^-6
     double start = lb_idx - 1, end = lb_idx;
-    while ( end - start > tolerance)
+    while (end - start > tolerance)
     {
         double mid = start + (end - start) / 2;
         if (spline_ptr_->arcLength(0, mid) < s_)
@@ -148,6 +146,8 @@ void pathFollowingFrenet::fitSpline(std::vector<double>& posX, std::vector<doubl
     for ( int i = 0; i < sz_; i++ )
         (*spline_seq_ptr)[i] = spline_ptr->arcLength(0, i);
     spline_seq_ptr_ = spline_seq_ptr;
+
+    std::cout << "successfully inited a pathFollowingFrenet object" << std::endl;
 }
 
 void pathFollowingFrenet::propagate()

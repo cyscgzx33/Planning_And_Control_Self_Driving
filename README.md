@@ -1,8 +1,7 @@
-# Planning and Control Package of Self Driving Car <br />
+# Planning and Control Package for Self Driving Car <br />
 <p align="center">
   <img src="simple_path_following.png" width="600" />
 </p>
-
 
 ## Build
 ### Dependencies
@@ -18,7 +17,6 @@
 * Using a **kinematics model in Frenet Coordinate** as the vehicle model
 * Apply a very simple *feedback control* strategy
 * Implement the algorithm in `C++`
-
 
 ## Reference
 ### Papers

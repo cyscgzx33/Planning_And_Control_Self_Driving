@@ -15,9 +15,9 @@
 class pathFollowingFrenet 
 {
   private:
-    
     /* fixed parameters */
     const double dt = 0.05;                  // time step
+    const int    N  = 30;                    // iteration steps
     const double vr = 10.0;                  // longditudinal velocity
 
     /* state variables */ 
@@ -45,12 +45,6 @@ class pathFollowingFrenet
     double k_theta_e_;
     double k_e_;
 
-  public:
-    pathFollowingFrenet(double s, 
-                        double e, 
-                        double theta_e);
-    ~pathFollowingFrenet();
-
     void fitSpline(std::vector<double>& posX, 
                    std::vector<double>& posY);
     void setControlGains(double k_theta_e, 
@@ -61,10 +55,18 @@ class pathFollowingFrenet
     void Frenet2Cartesian(double t);
     void propagate();                        // execute the propagation for one step
     void augmentStateVectors();
-    void investigateSpline() const;
     void investigateStates() const;
     void plotStates() const;
     void plotXYCartesian() const;
+
+  public:
+    pathFollowingFrenet(double s, 
+                        double e, 
+                        double theta_e);
+    ~pathFollowingFrenet();
+
+    void investigateSpline() const;
+
 };
 
 #endif /* PATH_FOLLOWING_FRENET_H */
