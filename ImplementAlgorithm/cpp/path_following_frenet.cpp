@@ -2,13 +2,20 @@
 
 namespace plt = matplotlibcpp;
 
-pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e) : 
-                     s_(s), e_(e), theta_e_(theta_e), k_theta_e_(1.0), k_e_(1.0) 
+pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e, double s_e) : 
+                     s_(s), e_(e), theta_e_(theta_e), s_e_(s_e), k_theta_e_(1.0), k_e_(1.0) 
 {
     /* initialize the spline */
-    std::vector<double> posX = {0.0, 1.0, 3.0, 4.0, 5.0, 5.5, 6.5, 7.7, 9.0,  10.5, 12,   14,   16,   10};
-    std::vector<double> posY = {0,0, 2.0, 4.0, 4.5, 6.5, 8.1, 9.4, 7.5, 10.0, 11.5, 12.5, 14.6, 16.9, 24};
+    std::vector<double> posX = {0.0,   1.0,  3.0,  4.0,  5.0,  5.5, 6.5,  7.7,  9.0,  10.5, 12,   14,   16,   10};
+    std::vector<double> posY = {0,0,   2.0,  4.0,  4.5,  6.5,  8.1, 9.4,  7.5,  10.0, 11.5, 12.5, 14.6, 16.9, 24};
     fitSpline(posX, posY);
+
+    /* adding speed profile for the spline above */
+    std::vector<double> idx( posX.size() );
+    for (int i = 0; i < posX.size(); i++)
+        idx[i] = double(i);
+    std::vector<double> v_ref = {10.0, 11.0, 11.5, 12.1, 11.2, 9.7, 10.5, 11.2, 11.3, 9.2,  10.2, 12.1, 8.9,  10.0};
+    fitVelProfile(idx, v_ref);
 
     /* start path following */
     std::cout << "start to execute the simulation of propagation" << std::endl;
@@ -34,6 +41,7 @@ pathFollowingFrenet::~pathFollowingFrenet()
 {
     delete spline_ptr_;
     delete spline_seq_ptr_;
+    delete v_prf_ptr_;
 }
 
 void pathFollowingFrenet::setControlGains(double k_theta_e, double k_e)
@@ -85,28 +93,70 @@ double pathFollowingFrenet::calKappa(double t)
     // d2sdt2(t) = ( d2xdt2(t), d2ydt2(t) )
     // according to [url=https://www.math24.net/curvature-radius/]:
     // kappa = abs(dxdt * d2ydt2 - dydt * d2xdt2) / pow(dxdt * dxdt + dydt * dydt, 1.5)
-    double dxdt = d_spline.tangent[0];
-    double dydt = d_spline.tangent[1];
-    double d2xdt2 = d_spline.curvature[0];
-    double d2ydt2 = d_spline.curvature[1];
-    double kappa_s = (dxdt * d2ydt2 - dydt * d2xdt2) / pow(dxdt * dxdt + dydt * dydt, 1.5);
-    
+    double dxdt    =  d_spline.tangent[0];
+    double dydt    =  d_spline.tangent[1];
+    double d2xdt2  =  d_spline.curvature[0];
+    double d2ydt2  =  d_spline.curvature[1];
+    double kappa_s =  (dxdt * d2ydt2 - dydt * d2xdt2) / pow(dxdt * dxdt + dydt * dydt, 1.5);
+
     return kappa_s;
 }
 
-double pathFollowingFrenet::calOmega()
+double pathFollowingFrenet::calOmega(double vr_t)
 {
     // execute a simple feedback control law to calculate control input
-    double omega = vr * kappa_s_ * cos(theta_e_) / (1 - kappa_s_ * e_) - k_theta_e_* vr * theta_e_ 
-                 - k_e_ * vr * sin(theta_e_) / theta_e_ * e_;
+    double omega = vr_t * kappa_s_ * cos(theta_e_) / (1 - kappa_s_ * e_) - k_theta_e_* vr_t * theta_e_ 
+                 - k_e_ * vr_t * sin(theta_e_) / theta_e_ * e_;
 
     return omega;
+}
+
+double pathFollowingFrenet::calSpeedInput(double t)
+{
+    /* update mu_ by calling PID controller and calculate vr_t */
+
+    // note mu_ := vr_t * cos(theta_e_) / (1 - kappa_s_ * e_) - v0(t) = -( Kp * s_e_ + Ki * integral{0, T} (s_e) dt + Kd * derivative(s_e) );
+    double error = s_e_;
+    mu_ = - ( getProp(error) + getIntegral(error) + getDeriv(error) );
+
+    // obtain v0_t from the vel profile spline
+    double v0_t = v_prf_ptr_->getPosition(t)[1];
+
+    // assume theta_e_ < 90 deg
+    assert( theta_e_ != M_PI / 2 );
+    return ( mu_ + v0_t ) * (1 - kappa_s_ * e_) / cos(theta_e_);
+}
+
+double pathFollowingFrenet::getProp(double error)
+{
+    return Kp * error;
+}
+
+double pathFollowingFrenet::getIntegral(double error)
+{
+    I_acc_ += error;
+    double integral = Ki * I_acc_;
+    if (integral > 1000)
+        integral = 1000;
+    else if (integral < 0)
+        integral = 0;
+
+    return integral;
+}
+
+double pathFollowingFrenet::getDeriv(double error)
+{
+    double diff = error - prev_error_;
+    prev_error_ = error;
+
+    return Kd * diff;
 }
 
 void pathFollowingFrenet::Frenet2Cartesian(double t)
 {
     /* Step I: obtain the cartesian coordinates on the nominal path */
     auto d_spline = spline_ptr_->getCurvature(t); // derivatives of spline @ t, including 1st and 2nd derivatives
+
     double x_cart     =  d_spline.position[0];
     double y_cart     =  d_spline.position[1];
     double dxdt_cart  =  d_spline.tangent[0];
@@ -136,7 +186,7 @@ void pathFollowingFrenet::fitSpline(std::vector<double>& posX, std::vector<doubl
     for (int i = 0; i < sz_; i++)
         spline_pts.push_back( QVector2D( posX[i], posY[i] ) );
 
-    // Ethan: not optimal to use pointer to init a NaturalSpline object here
+    // Yusen: not optimal to use pointer to init a NaturalSpline object here
     // TODO: figure out if another without using pointer would work
     NaturalSpline<QVector2D>* spline_ptr = new NaturalSpline<QVector2D>(spline_pts);
     spline_ptr_ = spline_ptr;
@@ -147,7 +197,21 @@ void pathFollowingFrenet::fitSpline(std::vector<double>& posX, std::vector<doubl
         (*spline_seq_ptr)[i] = spline_ptr->arcLength(0, i);
     spline_seq_ptr_ = spline_seq_ptr;
 
-    std::cout << "successfully inited a pathFollowingFrenet object" << std::endl;
+    std::cout << "successfully fit a spline about (X, Y) !" << std::endl;
+}
+
+void pathFollowingFrenet::fitVelProfile(std::vector<double>& idx, std::vector<double>& vel)
+{   
+    std::vector<QVector2D> vel_profile_pts;
+    for (int i = 0; i < vel.size(); i++)
+        vel_profile_pts.push_back( QVector2D( idx[i], vel[i] ) );
+
+    // Yusen: not optimal to use pointer to init a NaturalSpline object here
+    // TODO: figure out if another without using pointer would work
+    NaturalSpline<QVector2D>* v_prf_ptr = new NaturalSpline<QVector2D>(vel_profile_pts);
+    v_prf_ptr_ = v_prf_ptr;
+
+    std::cout << "successfully fit a spline about reference velocity profile !" << std::endl;
 }
 
 void pathFollowingFrenet::propagate()
@@ -161,13 +225,18 @@ void pathFollowingFrenet::propagate()
     // update the curvature kappa_s_
     kappa_s_ = calKappa(t);
     
+    // obtain vr_t by calling a PID controller
+    double vr_t = calSpeedInput(t);
+
     // update the control input omega_
-    omega_ = calOmega();
+    omega_ = calOmega(vr_t);
 
     // execute the kinematics equation to update the state variables
-    s_        =  s_ + vr * cos(theta_e_) / (1 - kappa_s_ * e_) * dt;
-    e_        =  e_ + vr * sin(theta_e_) * dt;
-    theta_e_  =  theta_e_ + ( omega_ - vr * kappa_s_ * cos(theta_e_) / (1 - kappa_s_ * e_) ) * dt;
+    // Note: since we're not assuming vr = const, now denote vr_t := vr(t) = v0(t) + v_e
+    s_        =  s_ + vr_t * cos(theta_e_) / (1 - kappa_s_ * e_) * dt;
+    e_        =  e_ + vr_t * sin(theta_e_) * dt;
+    theta_e_  =  theta_e_ + ( omega_ - vr_t * kappa_s_ * cos(theta_e_) / (1 - kappa_s_ * e_) ) * dt;
+    s_e_      =  s_e_ + mu_ * dt;
 }
 
 void pathFollowingFrenet::augmentStateVectors()
@@ -221,7 +290,7 @@ void pathFollowingFrenet::plotXYCartesian() const
 
 int main(int argc, char** argv)
 {
-    pathFollowingFrenet scenario_0(0.1, 1.0, 0.05);
+    pathFollowingFrenet scenario_0(0.1, 1.0, 0.05, 0.05);
     scenario_0.investigateSpline();
     std::cout << "preparing to destroy object scenario_0\n";
 

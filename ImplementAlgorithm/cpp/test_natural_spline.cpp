@@ -5,7 +5,7 @@
 #include <QVector2D>
 
 int main(int argc, char** argv)
-{   
+{
     // I guess:
     // we need to input P_{i,t} = ( x_i(t), y_i(t) )
     // and curvature can give us d^2 P_{i,t}/dt^2 = ( x_i''(t), y_i''(t) )
