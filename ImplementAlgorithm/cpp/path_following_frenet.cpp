@@ -6,6 +6,7 @@ pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e, dou
                      s_(s), e_(e), theta_e_(theta_e), s_e_(s_e), k_theta_e_(1.0), k_e_(1.0) 
 {
     /* initialize the spline */
+    readRoadmapFromCSV();
     std::vector<double> posX = {0.0,   1.0,  3.0,  4.0,  5.0,  5.5, 6.5,  7.7,  9.0,  10.5, 12,   14,   16,   10};
     std::vector<double> posY = {0,0,   2.0,  4.0,  4.5,  6.5,  8.1, 9.4,  7.5,  10.0, 11.5, 12.5, 14.6, 16.9, 24};
     fitSpline(posX, posY);
@@ -48,6 +49,44 @@ void pathFollowingFrenet::setControlGains(double k_theta_e, double k_e)
 {
     k_theta_e_ =  k_theta_e;
     k_e_ = k_e;
+}
+
+void pathFollowingFrenet::readRoadmapFromCSV()
+{   
+    // file pointer
+    std::fstream fin;
+
+    // file name
+    std::string roadmap_file = "../roadmap.csv"; // parent directory of the exe
+
+    // open an existing file
+    fin.open(roadmap_file, std::ios::in);
+
+    // check if file openning correctly
+    if ( fin.fail() )
+        std::cout << "Error openning file!" << std::endl;
+
+    // a container to store entire row of csv file
+    std::string line;
+
+    // start reading row by row
+    while ( std::getline(fin, line) )
+    {
+        std::cout << "line.size() = " << line.size() << std::endl;
+        // used for breaking words
+        std::istringstream ss(line);
+        std::string num;
+        std::vector<double> wp;
+        while ( std::getline(ss, num, ',') )
+        {
+            std::cout << "num = " << num << std::endl;
+            wp.push_back( std::stod(num) );
+        }
+        wps_.push_back(wp);
+    }
+
+    // evaluate if wps_ are processed properly
+    std::cout << "wps_ has a size = " << wps_.size() << std::endl;
 }
 
 double pathFollowingFrenet::reverseArclength()

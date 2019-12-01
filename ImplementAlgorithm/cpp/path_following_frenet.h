@@ -15,6 +15,8 @@
 #include <vector>
 #include <iostream>
 #include <cmath>
+#include <sstream>
+#include <fstream>
 /* for fitting spline */
 #include "lib/spline_library/splines/natural_spline.h"
 #include "lib/spline_library/vector.h"
@@ -54,6 +56,9 @@ class pathFollowingFrenet
     std::vector<double> x_vec_;
     std::vector<double> y_vec_;
 
+    /* map information */
+    std::vector<std::vector<double>> wps_;   // waypoints read from map csv
+
     /* spline variables */
     NaturalSpline<QVector2D>* spline_ptr_;   // the spline function, spline_ := s(t)
     NaturalSpline<QVector2D>* v_prf_ptr_;    // reference speed profile spline
@@ -72,6 +77,7 @@ class pathFollowingFrenet
                        std::vector<double>& vel);
     void setControlGains(double k_theta_e, 
                          double k_e);
+    void readRoadmapFromCSV();               // read map info from cvs and store in wps_
     double reverseArclength();               // obtain t from s(t) by inversing the function
     double calKappa(double t);
     double calOmega(double vr_t);            // calculate omega_ via current speed vr_t 
