@@ -30,7 +30,7 @@ class pathFollowingFrenet
   private:
     /* fixed parameters */
     const double dt = 0.05;                  // time step
-    const int    N  = 30;                    // iteration steps
+    const int    N  = 3000;                  // iteration steps; TODO: try to make it automatic
     const double vr = 10.0;                  // longditudinal velocity (lateral control only)
     const double Kp = 10.0;                  // PID controller params: proporsional
     const double Ki = 0.05;                  // PID controller params: integral

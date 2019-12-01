@@ -5,17 +5,28 @@ namespace plt = matplotlibcpp;
 pathFollowingFrenet::pathFollowingFrenet(double s, double e, double theta_e, double s_e) : 
                      s_(s), e_(e), theta_e_(theta_e), s_e_(s_e), k_theta_e_(1.0), k_e_(1.0) 
 {
-    /* initialize the spline */
+    /* read map info */
     readRoadmapFromCSV();
-    std::vector<double> posX = {0.0,   1.0,  3.0,  4.0,  5.0,  5.5, 6.5,  7.7,  9.0,  10.5, 12,   14,   16,   10};
-    std::vector<double> posY = {0,0,   2.0,  4.0,  4.5,  6.5,  8.1, 9.4,  7.5,  10.0, 11.5, 12.5, 14.6, 16.9, 24};
+
+    /* initialize the spline */
+    std::vector<double> posX( wps_.size() );
+    std::vector<double> posY( wps_.size() );
+    
+    for (int i = 0; i < wps_.size(); i++)
+    {   
+        posX[i] = double( wps_[i][4] );
+        posY[i] = double( wps_[i][5] );
+    }
     fitSpline(posX, posY);
 
     /* adding speed profile for the spline above */
-    std::vector<double> idx( posX.size() );
-    for (int i = 0; i < posX.size(); i++)
+    std::vector<double> idx( wps_.size() );
+    std::vector<double> v_ref( wps_.size() );
+    for (int i = 0; i < wps_.size(); i++)
+    {
         idx[i] = double(i);
-    std::vector<double> v_ref = {10.0, 11.0, 11.5, 12.1, 11.2, 9.7, 10.5, 11.2, 11.3, 9.2,  10.2, 12.1, 8.9,  10.0};
+        v_ref[i] = 10.0 + double(i) / 100.0;
+    }
     fitVelProfile(idx, v_ref);
 
     /* start path following */
