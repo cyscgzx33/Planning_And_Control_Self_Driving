@@ -1,12 +1,19 @@
 /**
- * Author: Yusen Chen
+ * Author: 
+ *  - Yusen Chen
+ *  - chenyus@umich.edu
  * 
- * Version
- *  - V0.1, 11/25/2019
+ * Version:
+ *  - V0.2, 12/01/2019
  * 
- * Note
+ * Note:
  *  - V0.0 (11/19/2019): Implemented a path following algorithm, lateral control only
- *  - V0.1 (11/25/2019): Adding a longitudinal control module
+ *  - V0.1 (11/25/2019): Added a longitudinal control module
+ *  - V0.2 (12/01/2019): Added map info reading module from CSV file
+ * 
+ * TODO:
+ *  - Implment trajectory generation / motion planning methodology
+ *  - Implement MPC control methodology
  * */
 
 #ifndef PATH_FOLLOWING_FRENET_H
